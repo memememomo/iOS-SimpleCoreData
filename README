@@ -1,0 +1,102 @@
+簡単？にCoreDataを扱えるようにするライブラリです。
+
+
+/*
+ * xcdatamodelの設定
+ */
+
+// FileName.xcdatamodel
+NSString *xcdatamodelName = @"FileName";
+
+SimpleCoreDataFactory *simpleCoreDataFactory = [SimpleCoreDataFactory sharedCoreData];
+simpleCoreDataFactory.xcdatamodelName = xcdatamodel;
+simpleCoreDataFactory.sqliteName = xcdatamodel;
+
+
+
+/*
+ * SimpleCoreDataオブジェクトを生成
+ */
+
+NSString *entityName = @"user";
+
+// シングルトンでFactoryを取得
+SimpleCoreDataFactory *simpleCoreDataFactory = [SimpleCoreDataFactory sharedCoreData];
+
+// リクエストオブジェクトを生成
+NSFetchRequest *request = [simpleCoreDataFactory createRequest:entityName];
+
+// timeStampカラムでソート
+NSDictionary *sort = [[[NSDictionary alloc]
+	     	     initWithObjects:[NSArray arrayWithObjects:[NSNumber numberWithBool:NO], nil]
+		     forKeys:[NSArray arrayWithObjects:@"timeStamp", nil]]
+		    autorelease];
+[simpleCoreDataFactory setSortDescriptiors:request AndSort:sort];
+
+// NSFetchedResultsControllerを生成
+NSFetchedResultsController *fetchedResultController = [simpleCoreDataFactory fetchedResultsController:request
+			   			      AndSectionNameKeyPath:nil];
+
+SimpleCoreData *simpleCoreData = [simpleCoreDataFactory createSimpleCoreData:fetchedResultController];
+
+
+/*
+ * NSIndexPathやrow/sectionでデータを取得
+ */ 
+
+NSManagedObject *managedObject = [simpleCoreData.fetchedResultsController objectAtIndexPath:indexPath];
+
+NSManagedObject *managedObject = [simpleCoreData fetchObjectWithRow:row AndSection:section];
+
+
+/*
+ * セクションに関する情報
+ */ 
+
+// セクション数
+NSInteger count = [[simpleCoreData.fetchedResultsController sections] count];
+
+// セクション名
+id <NSFetchedResultsSectionInfo> sectionInfo = [[simpleCoreData.fetchedResultsController sections]  objectAtIndex:section];
+NSString *sectionName = [sectionInfo name];
+
+// セクション毎のrow数
+NSInteger rows = [sectionInfo numberOfObjects];
+
+
+/*
+ * WHERE文
+ */
+
+NSPredicate *predicate = [NSPredicate predicateWithFormat:@"id == %d", id];
+[simpleCoreDataFactory setPredicate:simpleCoreData.fetchedResultsController.fetchRequest WithPredicate:predicate];
+[simpleCoreData performFetch];
+
+// 条件にあったNSManagedObjectの配列
+NSArray *array = [simpleCoreData fetchObjectAll];
+
+
+/*
+ * 新しいデータを格納
+ */ 
+
+NSManagedObject *newObject = [[simpleCoreData newManagedObject];
+[newObject setValue:2 forKey:@"id"];
+[newObject setValue:@"Tarou" forKey:@"name"];
+[newObject setValue:[NSNumber numberOfInt:20] forKey:@"age"];
+[simpleCoreData saveContext];
+
+
+/*
+ * データを削除
+ */
+
+// rowとsectionを指定して削除
+[simpleCoreData deleteObjectWithRow:0 AndSection:0];
+
+// IndexPathを指定して削除
+[simpleCoreData deleteObjectWithIndexPath:indexPath];
+
+// NSManagedObjectを指定して削除
+[simpleCoreData deleteObjectWithObject:managedObject];
+

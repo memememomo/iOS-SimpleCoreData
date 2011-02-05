@@ -18,6 +18,7 @@
 - (id)initWithController:(NSFetchedResultsController *)controller;
 - (NSArray *)fetchObjectAll;
 - (NSManagedObject *)fetchObjectWithRow:(NSInteger)row AndSection:(NSInteger)section;
+- (void)performFetch;
 - (NSInteger)countObjects;
 - (NSInteger)countSections;
 - (void)deleteObjectWithRow:(NSInteger)row AndSection:(NSInteger)section;
